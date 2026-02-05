@@ -167,7 +167,7 @@
     <div class="grid" id="grid"></div>
 
     <footer>
-      Built for debate prep. Summaries are automated and evidence‑based. Verify key claims in the linked originals.
+      Built for debate prep. Criticisms are extracted only when the source text explicitly supports them.
     </footer>
   </main>
 
@@ -274,6 +274,11 @@ const stopWords = new Set([
   "as","is","are","was","were","be","this","that","it","or","but","not",
   "they","their","his","her","he","she","we","you","i","our"
 ]);
+const criticismKeywords = [
+  "critic", "controvers", "dispute", "debate", "concern", "challenge",
+  "accus", "question", "doubt", "oppos", "condemn", "blame", "ethic",
+  "moral", "responsib", "war", "weapon", "explosive", "dynamite"
+];
 
 const qInput = document.getElementById("q");
 const filterSelect = document.getElementById("filter");
@@ -338,6 +343,24 @@ function extractEvidence(text, maxItems = 2) {
     .map((item) => item.sentence);
 }
 
+function extractCriticisms(text, maxItems = 5) {
+  const sentences = text
+    .replace(/\\s+/g, " ")
+    .split(/(?<=[.!?])\\s+/)
+    .filter((sentence) => sentence.length > 40);
+
+  const hits = sentences.filter((sentence) => {
+    const lower = sentence.toLowerCase();
+    return criticismKeywords.some((key) => lower.includes(key));
+  });
+
+  if (hits.length === 0) return [];
+  const scored = scoreSentences(hits);
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxItems)
+    .map((item) => item.sentence);
+}
 function loadSummaries() {
   try {
     const raw = localStorage.getItem("nobel-summaries");
@@ -356,7 +379,7 @@ function getSummary(url) {
 }
 
 function setSummary(url, summary, evidence) {
-  state.summaries[url] = { summary, evidence, updatedAt: Date.now() };
+  state.summaries[url] = { summary, evidence, criticisms: [], updatedAt: Date.now() };
   saveSummaries();
 }
 
@@ -385,7 +408,14 @@ async function fetchAndSummarize(source) {
     if (!data.text) throw new Error("No readable text found.");
     const summaryText = summarize(data.text, 2);
     const evidenceItems = extractEvidence(data.text, 2);
-    setSummary(source.url, summaryText, evidenceItems);
+    const criticisms = extractCriticisms(data.text, 2);
+    state.summaries[source.url] = {
+      summary: summaryText,
+      evidence: evidenceItems,
+      criticisms,
+      updatedAt: Date.now()
+    };
+    saveSummaries();
     setStatus(source.url, "Auto summary complete.");
   } catch (error) {
     setStatus(source.url, `Failed: ${error.message}`);
@@ -434,23 +464,11 @@ function render() {
     link.className = "sources";
     link.innerHTML = `<a href="${source.url}" target="_blank" rel="noopener">${source.url}</a>`;
 
-    const label = document.createElement("div");
-    label.className = "label";
-    label.textContent = "Summary";
-
-    const summary = document.createElement("div");
-    summary.className = "text";
-    summary.textContent = stored?.summary || "Waiting for auto-summary...";
-
-    const evidenceLabel = document.createElement("div");
-    evidenceLabel.className = "label";
-    evidenceLabel.textContent = "Evidence bullets";
-
-    const evidence = document.createElement("div");
-    evidence.className = "text";
-    evidence.textContent = stored?.evidence?.length
-      ? stored.evidence.join(" ")
-      : "No evidence bullets yet.";
+    const criticisms = document.createElement("div");
+    criticisms.className = "text";
+    criticisms.textContent = stored?.criticisms?.length
+      ? stored.criticisms.join(" ")
+      : "No criticism passages detected in this source.";
 
     const status = document.createElement("div");
     status.className = "status";
@@ -477,7 +495,7 @@ function render() {
     });
 
     actions.append(summarizeBtn, clearBtn);
-    card.append(title, link, label, summary, evidenceLabel, evidence, status, actions);
+    card.append(title, link, criticisms, status, actions);
     grid.appendChild(card);
   });
 }
@@ -494,12 +512,13 @@ resetBtn.addEventListener("click", () => {
 
 exportBtn.addEventListener("click", () => {
   const rows = SOURCES.map((source) => {
-    const stored = getSummary(source.url) || { summary: "", evidence: [] };
+    const stored = getSummary(source.url) || { summary: "", evidence: [], criticisms: [] };
     return {
       title: source.title,
       url: source.url,
       summary: stored.summary,
       evidence: stored.evidence.join(" "),
+      criticisms: stored.criticisms.join(" "),
     };
   });
   const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
