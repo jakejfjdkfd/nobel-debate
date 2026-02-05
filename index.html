@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Debate Research - Alfred Nobel</title>
+  <style>
+    :root {
+      --bg: #0a0c13;
+      --ink: #e7ecf2;
+      --accent: #6ef3ff;
+      --accent-2: #ff6bcb;
+      --muted: #aab3c2;
+      --card: #121725;
+      --border: #1f2a3f;
+      --tag: #1a2133;
+      --glow: 0 0 24px rgba(110, 243, 255, 0.18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", "Eurostile", "Arial", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(110, 243, 255, 0.18), transparent 60%),
+        radial-gradient(900px 600px at 110% 10%, rgba(255, 107, 203, 0.15), transparent 55%),
+        linear-gradient(180deg, #0a0c13 0%, #0b1020 60%, #0c1326 100%);
+    }
+    header {
+      padding: 32px 20px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(120deg, rgba(18, 23, 37, 0.9) 0%, rgba(10, 12, 19, 0.9) 100%);
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: var(--glow);
+    }
+    p.subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 180px 180px 180px 180px;
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+    input, select, button {
+      font-family: inherit;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0f1424;
+      color: var(--ink);
+      box-shadow: inset 0 0 0 1px rgba(110, 243, 255, 0.08);
+    }
+    button {
+      background: linear-gradient(135deg, #1ad1ff 0%, #6ef3ff 100%);
+      color: #0a0c13;
+      cursor: pointer;
+      border: none;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    button.secondary {
+      background: #1b2236;
+      color: var(--ink);
+    }
+    .stats {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25), var(--glow);
+      display: grid;
+      gap: 10px;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--accent);
+      letter-spacing: 0.4px;
+    }
+    .label {
+      font-weight: 700;
+      color: var(--accent-2);
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin: 10px 0 4px;
+    }
+    .text {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .sources {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .sources a { color: var(--accent); text-decoration: none; }
+    .sources a:hover { text-decoration: underline; }
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    footer {
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 1100px) {
+      .controls { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (max-width: 720px) {
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Debate Research: Alfred Nobel</h1>
+      <p class="subtitle">Auto‑summaries from hosted sources. Balanced, evidence‑based debate prep. (No Wikipedia.)</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="controls">
+      <input id="q" type="search" placeholder="Search titles, URLs, summaries…" />
+      <select id="filter">
+        <option value="">All sources</option>
+        <option value="summarized">Summarized only</option>
+        <option value="missing">Missing summaries</option>
+      </select>
+      <button id="summarize">Summarize All</button>
+      <button id="export">Export Summaries</button>
+      <button id="reset" class="secondary">Reset Summaries</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="grid" id="grid"></div>
+
+    <footer>
+      Built for debate prep. Summaries are automated and evidence‑based. Verify key claims in the linked originals.
+    </footer>
+  </main>
+
+<script>
+const SOURCES = [
+  {"title":"Britannica - Alfred Nobel","url":"https://www.britannica.com/biography/Alfred-Nobel"},
+  {"title":"Nobel Prize - Alfred Nobel's life and work","url":"https://www.nobelprize.org/alfred-nobel/alfred-nobels-life-and-work/"},
+  {"title":"Nobel Prize - Biographical information","url":"https://www.nobelprize.org/alfred-nobel/biographical-information/"},
+  {"title":"Nobel Prize - Full text of Alfred Nobel's will","url":"https://www.nobelprize.org/alfred-nobel/full-text-of-alfred-nobels-will-2/"},
+  {"title":"Nobel Prize - Alfred Nobel","url":"https://www.nobelprize.org/alfred-nobel/"},
+  {"title":"Nobel Prize - Alfred Nobel's will","url":"https://www.nobelprize.org/prizes/about/alfred-nobels-will/"},
+  {"title":"Nobel Prize - Facts","url":"https://www.nobelprize.org/prizes/facts/nobel-prize-facts/"},
+  {"title":"Nobel Prize - Award ceremonies","url":"https://www.nobelprize.org/prizes/about/the-nobel-prize-award-ceremonies/"},
+  {"title":"Nobel Prize - Award process","url":"https://www.nobelprize.org/prizes/about/prize-award-process/"},
+  {"title":"Nobel Prize - Nobel Foundation","url":"https://www.nobelprize.org/prizes/about/nobel-foundation/"},
+  {"title":"Nobel Prize - History","url":"https://www.nobelprize.org/prizes/about/history/"},
+  {"title":"Nobel Prize - Peace","url":"https://www.nobelprize.org/prizes/peace/"},
+  {"title":"Nobel Prize - Literature","url":"https://www.nobelprize.org/prizes/literature/"},
+  {"title":"Nobel Prize - Physics","url":"https://www.nobelprize.org/prizes/physics/"},
+  {"title":"Nobel Prize - Chemistry","url":"https://www.nobelprize.org/prizes/chemistry/"},
+  {"title":"Nobel Prize - Medicine","url":"https://www.nobelprize.org/prizes/medicine/"},
+  {"title":"Nobel Prize - Economic Sciences","url":"https://www.nobelprize.org/prizes/economic-sciences/"},
+  {"title":"Nobel Prize Museum","url":"https://www.nobelprizemuseum.se/en"},
+  {"title":"Nobel Prize - Q&A","url":"https://www.nobelprize.org/alfred-nobel/alfred-nobel-questions-and-answers/"},
+  {"title":"Science History - Alfred Nobel","url":"https://www.sciencehistory.org/education/scientific-biographies/alfred-nobel"},
+  {"title":"Famous Scientists - Alfred Nobel","url":"https://www.famousscientists.org/alfred-nobel/"},
+  {"title":"Ducksters - Alfred Nobel","url":"https://www.ducksters.com/biography/alfred_nobel.php"},
+  {"title":"World Atlas - Alfred Nobel","url":"https://www.worldatlas.com/articles/alfred-nobel.html"},
+  {"title":"Biography Online - Alfred Nobel","url":"https://www.biographyonline.net/scientists/alfred-nobel.html"},
+  {"title":"History Extra - Alfred Nobel","url":"https://www.historyextra.com/period/victorian/alfred-nobel-facts-biography/"},
+  {"title":"Live Science - Alfred Nobel","url":"https://www.livescience.com/alfred-nobel"},
+  {"title":"ThoughtCo - Alfred Nobel","url":"https://www.thoughtco.com/alfred-nobel-biography-4176432"},
+  {"title":"Softschools - Alfred Nobel facts","url":"https://www.softschools.com/facts/scientists/alfred_nobel_facts/1586/"},
+  {"title":"The Famous People - Alfred Nobel","url":"https://www.thefamouspeople.com/profiles/alfred-nobel-190.php"},
+  {"title":"NNDB - Alfred Nobel","url":"https://www.nndb.com/people/380/000044248/"},
+  {"title":"Linda Hall Library - Alfred Nobel","url":"https://www.lindahall.org/about/news/scientist-of-the-day/alfred-nobel/"},
+  {"title":"PBS - Alfred Nobel","url":"https://www.pbs.org/wgbh/aso/databank/entries/bknobe.html"},
+  {"title":"RSC - Alfred Nobel","url":"https://www.rsc.org/diversity/150-years-of-chemistry/alfred-nobel"},
+  {"title":"Chemistry World - Alfred Nobel","url":"https://www.chemistryworld.com/alfred-nobel/3007088.article"},
+  {"title":"Engineering.com - Alfred Nobel","url":"https://www.engineering.com/alfred-nobel-inventor-of-dynamite/"},
+  {"title":"Explosives History - Alfred Nobel","url":"https://www.explosiveshistory.org/alfred-nobel"},
+  {"title":"Mining Hall of Fame - Alfred Nobel","url":"https://www.mininghalloffame.org/inductee/alfred-nobel"},
+  {"title":"ACS - Nobel landmark","url":"https://www.acs.org/education/whatischemistry/landmarks/nobel.html"},
+  {"title":"Tekniska Museet - Alfred Nobel","url":"https://www.tek.museum/en/explore/alfred-nobel/"},
+  {"title":"Nobel Center - Alfred Nobel","url":"https://www.nobelcenter.se/en/about/alfred-nobel/"},
+  {"title":"Sweden.se - Alfred Nobel","url":"https://www.sweden.se/culture/alfred-nobel/"},
+  {"title":"Visit Stockholm - Nobel Prize Museum","url":"https://www.visitstockholm.com/o/nobel-prize-museum/"},
+  {"title":"BBC - Alfred Nobel","url":"https://www.bbc.co.uk/history/historic_figures/nobel_alfred.shtml"},
+  {"title":"National Geographic - Nobel Prize","url":"https://www.nationalgeographic.com/history/article/nobel-prize"},
+  {"title":"Smithsonian - Alfred Nobel","url":"https://www.smithsonianmag.com/history/alfred-nobel-man-behind-prize-180962329/"},
+  {"title":"Discovery - Alfred Nobel","url":"https://www.discovery.com/science/alfred-nobel"},
+  {"title":"History.com - Nobel Prize","url":"https://www.history.com/topics/inventions/nobel-prize"},
+  {"title":"Oxford Reference - Alfred Nobel","url":"https://www.oxfordreference.com/view/10.1093/oi/authority.20110803100258816"},
+  {"title":"Cambridge Core - Alfred Nobel","url":"https://www.cambridge.org/core/books/alfred-nobel/"},
+  {"title":"Harvard Magazine - Alfred Nobel","url":"https://www.harvardmagazine.com/alfred-nobel"},
+  {"title":"Stanford Library - Nobel","url":"https://library.stanford.edu/nobel"},
+  {"title":"MIT - Nobel","url":"https://www.mit.edu/~chemistry/nobel/"},
+  {"title":"UPenn Almanac - Nobel","url":"https://www.upenn.edu/almanac/v45/n34/nobel.html"},
+  {"title":"Project Gutenberg search","url":"https://www.gutenberg.org/ebooks/search/?query=alfred+nobel"},
+  {"title":"Archive.org search","url":"https://archive.org/search?query=alfred+nobel"},
+  {"title":"HathiTrust record","url":"https://www.hathitrust.org/record/alfred-nobel"},
+  {"title":"Open Library search","url":"https://openlibrary.org/search?q=alfred+nobel"},
+  {"title":"Poetry Foundation - Alfred Nobel","url":"https://www.poetryfoundation.org/poets/alfred-nobel"},
+  {"title":"Find a Grave - Alfred Nobel","url":"https://www.findagrave.com/memorial/7300/alfred-nobel"},
+  {"title":"Prabook - Alfred Nobel","url":"https://prabook.com/web/alfred.nobel/372516"},
+  {"title":"Alchetron - Alfred Nobel","url":"https://alchetron.com/Alfred-Nobel"},
+  {"title":"KidsKonnect - Alfred Nobel","url":"https://www.kidskonnect.com/biography/alfred-nobel/"},
+  {"title":"Twinkl - Alfred Nobel","url":"https://www.twinkl.com/teaching-wiki/alfred-nobel"},
+  {"title":"Primary Homework Help - Alfred Nobel","url":"https://www.primaryhomeworkhelp.co.uk/nobel/"},
+  {"title":"NatGeo Kids - Nobel Prize","url":"https://www.natgeokids.com/uk/discover/history/general-history/nobel-prize/"},
+  {"title":"English Heritage - Alfred Nobel","url":"https://www.english-heritage.org.uk/learn/histories/alfred-nobel/"},
+  {"title":"Scandinavia Standard - Alfred Nobel","url":"https://www.scandinaviastandard.com/the-life-of-alfred-nobel/"},
+  {"title":"Swedish Press - Alfred Nobel","url":"https://www.swedishpress.com/alfred-nobel/"},
+  {"title":"The Local - Alfred Nobel tag","url":"https://www.thelocal.se/tag/alfred-nobel"},
+  {"title":"Europeana search","url":"https://www.europeana.eu/en/search?q=alfred%20nobel"},
+  {"title":"Library of Congress search","url":"https://www.loc.gov/search/?q=alfred+nobel"},
+  {"title":"British Library - Alfred Nobel","url":"https://www.bl.uk/people/alfred-nobel"},
+  {"title":"UK National Archives search","url":"https://www.nationalarchives.gov.uk/search/results?q=alfred+nobel"},
+  {"title":"Smithsonian search","url":"https://www.si.edu/search?edan_q=alfred-nobel"},
+  {"title":"Smithsonian American History search","url":"https://americanhistory.si.edu/search?query=alfred-nobel"},
+  {"title":"Getty ULAN - Alfred Nobel","url":"https://www.getty.edu/research/tools/vocabularies/ulan/alfred-nobel"},
+  {"title":"USHMM search","url":"https://www.ushmm.org/search/results/?q=alfred-nobel"},
+  {"title":"Encyclopedia.com - Alfred Nobel","url":"https://www.encyclopedia.com/people/history/scandinavian-history-biographies/alfred-nobel"},
+  {"title":"Infoplease - Alfred Nobel","url":"https://www.infoplease.com/biographies/scientists/alfred-nobel"},
+  {"title":"Britannica - Nobel Prize","url":"https://www.britannica.com/money/topic/Nobel-Prize"},
+  {"title":"Nobel Media corporate","url":"https://corporate.nobelmedia.se/en/"},
+  {"title":"Nobel Peace Center","url":"https://www.nobelpeacecenter.org/en"},
+  {"title":"Nobel House Museum","url":"https://www.nobelhousemuseum.org/"},
+  {"title":"Sanremo Riviera - Alfred Nobel","url":"https://www.sanremoriviera.it/en/art-culture/alfred-nobel/"},
+  {"title":"Visit Liguria - Alfred Nobel","url":"https://www.visitliguria.eu/en/alfred-nobel"},
+  {"title":"Italy Magazine - Alfred Nobel in San Remo","url":"https://www.italymagazine.com/featured-story/alfred-nobel-san-remo"},
+  {"title":"Sweden History - Alfred Nobel","url":"https://www.swedenhistory.se/alfred-nobel"},
+  {"title":"History Hit - Alfred Nobel","url":"https://www.historyhit.com/alfred-nobel/"},
+  {"title":"Tate - Alfred Nobel","url":"https://www.tate.org.uk/art/artists/alfred-nobel-"},
+  {"title":"Art UK - Alfred Nobel","url":"https://www.artuk.org/discover/artists/nobel-alfred-18331896"},
+  {"title":"Oxford Learner's Dictionaries - Alfred Nobel","url":"https://www.oxfordlearnersdictionaries.com/definition/english/alfred-nobel"},
+  {"title":"Collins Dictionary - Alfred Nobel","url":"https://www.collinsdictionary.com/biography/alfred-nobel"},
+  {"title":"Britannica - Nobel Foundation","url":"https://www.britannica.com/topic/Nobel-Foundation"},
+  {"title":"Nobel Prize - Alfred Nobel articles","url":"https://www.nobelprize.org/alfred-nobel/articles/"}
+];
+
+const stopWords = new Set([
+  "the","and","a","an","to","of","in","for","on","with","at","by","from",
+  "as","is","are","was","were","be","this","that","it","or","but","not",
+  "they","their","his","her","he","she","we","you","i","our"
+]);
+
+const qInput = document.getElementById("q");
+const filterSelect = document.getElementById("filter");
+const grid = document.getElementById("grid");
+const stats = document.getElementById("stats");
+const resetBtn = document.getElementById("reset");
+const exportBtn = document.getElementById("export");
+const summarizeBtn = document.getElementById("summarize");
+
+const state = {
+  summaries: loadSummaries(),
+  status: {},
+};
+
+function tokenize(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((token) => token && !stopWords.has(token));
+}
+
+function scoreSentences(sentences) {
+  const tokens = tokenize(sentences.join(" "));
+  const freq = new Map();
+  tokens.forEach((token) => freq.set(token, (freq.get(token) || 0) + 1));
+
+  return sentences.map((sentence) => {
+    const words = tokenize(sentence);
+    const score = words.reduce((sum, word) => sum + (freq.get(word) || 0), 0);
+    return { sentence, score: score / Math.max(words.length, 1) };
+  });
+}
+
+function summarize(text, maxSentences = 2) {
+  if (!text.trim()) return "";
+  const sentences = text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean);
+  if (sentences.length <= maxSentences) return sentences.join(" ");
+
+  const scored = scoreSentences(sentences);
+  const top = [...scored]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxSentences)
+    .sort((a, b) => sentences.indexOf(a.sentence) - sentences.indexOf(b.sentence))
+    .map((item) => item.sentence);
+
+  return top.join(" ");
+}
+
+function extractEvidence(text, maxItems = 2) {
+  const sentences = text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => sentence.length > 40);
+  const scored = scoreSentences(sentences);
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxItems)
+    .map((item) => item.sentence);
+}
+
+function loadSummaries() {
+  try {
+    const raw = localStorage.getItem("nobel-summaries");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSummaries() {
+  localStorage.setItem("nobel-summaries", JSON.stringify(state.summaries));
+}
+
+function getSummary(url) {
+  return state.summaries[url] || null;
+}
+
+function setSummary(url, summary, evidence) {
+  state.summaries[url] = { summary, evidence, updatedAt: Date.now() };
+  saveSummaries();
+}
+
+function setStatus(url, message) {
+  state.status[url] = message;
+}
+
+async function fetchAndSummarize(source) {
+  if (getSummary(source.url)) return;
+  setStatus(source.url, "Summarizing...");
+  render();
+
+  try {
+    const response = await fetch("/api/summarize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: source.url })
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || `Server error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data.text) throw new Error("No readable text found.");
+    const summaryText = summarize(data.text, 2);
+    const evidenceItems = extractEvidence(data.text, 2);
+    setSummary(source.url, summaryText, evidenceItems);
+    setStatus(source.url, "Auto summary complete.");
+  } catch (error) {
+    setStatus(source.url, `Failed: ${error.message}`);
+  }
+
+  render();
+}
+
+async function summarizeAll() {
+  for (const source of SOURCES) {
+    await fetchAndSummarize(source);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+}
+
+function render() {
+  const query = qInput.value.trim().toLowerCase();
+  const filter = filterSelect.value;
+
+  const items = SOURCES.filter((source) => {
+    const stored = getSummary(source.url);
+    const summaryText = stored?.summary || "";
+    const evidenceText = (stored?.evidence || []).join(" ");
+    const haystack = `${source.title} ${source.url} ${summaryText} ${evidenceText}`.toLowerCase();
+    const matchesQuery = !query || haystack.includes(query);
+    const hasSummary = Boolean(stored);
+    const matchesFilter =
+      !filter ||
+      (filter === "summarized" && hasSummary) ||
+      (filter === "missing" && !hasSummary);
+    return matchesQuery && matchesFilter;
+  });
+
+  stats.textContent = `${items.length} shown • ${SOURCES.length} total`;
+  grid.innerHTML = "";
+
+  items.forEach((source) => {
+    const stored = getSummary(source.url);
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const title = document.createElement("h3");
+    title.textContent = source.title;
+
+    const link = document.createElement("div");
+    link.className = "sources";
+    link.innerHTML = `<a href="${source.url}" target="_blank" rel="noopener">${source.url}</a>`;
+
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent = "Summary";
+
+    const summary = document.createElement("div");
+    summary.className = "text";
+    summary.textContent = stored?.summary || "Waiting for auto-summary...";
+
+    const evidenceLabel = document.createElement("div");
+    evidenceLabel.className = "label";
+    evidenceLabel.textContent = "Evidence bullets";
+
+    const evidence = document.createElement("div");
+    evidence.className = "text";
+    evidence.textContent = stored?.evidence?.length
+      ? stored.evidence.join(" ")
+      : "No evidence bullets yet.";
+
+    const status = document.createElement("div");
+    status.className = "status";
+    status.textContent = state.status[source.url] || "";
+
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+
+    const summarizeBtn = document.createElement("button");
+    summarizeBtn.textContent = "Re-summarize";
+    summarizeBtn.addEventListener("click", async () => {
+      delete state.summaries[source.url];
+      saveSummaries();
+      await fetchAndSummarize(source);
+    });
+
+    const clearBtn = document.createElement("button");
+    clearBtn.className = "secondary";
+    clearBtn.textContent = "Clear";
+    clearBtn.addEventListener("click", () => {
+      delete state.summaries[source.url];
+      saveSummaries();
+      render();
+    });
+
+    actions.append(summarizeBtn, clearBtn);
+    card.append(title, link, label, summary, evidenceLabel, evidence, status, actions);
+    grid.appendChild(card);
+  });
+}
+
+qInput.addEventListener("input", render);
+filterSelect.addEventListener("change", render);
+
+resetBtn.addEventListener("click", () => {
+  if (!confirm("Clear all saved summaries?")) return;
+  state.summaries = {};
+  saveSummaries();
+  render();
+});
+
+exportBtn.addEventListener("click", () => {
+  const rows = SOURCES.map((source) => {
+    const stored = getSummary(source.url) || { summary: "", evidence: [] };
+    return {
+      title: source.title,
+      url: source.url,
+      summary: stored.summary,
+      evidence: stored.evidence.join(" "),
+    };
+  });
+  const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "nobel-summaries.json";
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+summarizeBtn.addEventListener("click", () => {
+  summarizeAll();
+});
+
+render();
+
+// Auto-summarize on load.
+window.addEventListener("load", () => {
+  summarizeAll();
+});
+</script>
+</body>
+</html>
