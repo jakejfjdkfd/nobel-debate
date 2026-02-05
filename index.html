@@ -343,11 +343,12 @@ function extractEvidence(text, maxItems = 2) {
     .map((item) => item.sentence);
 }
 
-function extractCriticisms(text, maxItems = 6) {
+function extractCriticisms(text, maxItems = 4) {
   const sentences = text
     .replace(/\\s+/g, " ")
     .split(/(?<=[.!?])\\s+/)
-    .filter((sentence) => sentence.length > 40);
+    .map((s) => s.trim())
+    .filter((sentence) => sentence.length > 40 && sentence.length < 280);
 
   const hits = sentences.filter((sentence) => {
     const lower = sentence.toLowerCase();
@@ -406,7 +407,7 @@ async function fetchAndSummarize(source) {
 
     const data = await response.json();
     if (!data.text) throw new Error("No readable text found.");
-    const criticisms = extractCriticisms(data.text, 6);
+    const criticisms = extractCriticisms(data.text, 4);
     state.summaries[source.url] = { criticisms, updatedAt: Date.now() };
     saveSummaries();
     setStatus(source.url, "Auto summary complete.");
