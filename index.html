@@ -343,7 +343,7 @@ function extractEvidence(text, maxItems = 2) {
     .map((item) => item.sentence);
 }
 
-function extractCriticisms(text, maxItems = 5) {
+function extractCriticisms(text, maxItems = 6) {
   const sentences = text
     .replace(/\\s+/g, " ")
     .split(/(?<=[.!?])\\s+/)
@@ -378,8 +378,8 @@ function getSummary(url) {
   return state.summaries[url] || null;
 }
 
-function setSummary(url, summary, evidence) {
-  state.summaries[url] = { summary, evidence, criticisms: [], updatedAt: Date.now() };
+function setSummary(url, criticisms) {
+  state.summaries[url] = { criticisms, updatedAt: Date.now() };
   saveSummaries();
 }
 
@@ -406,15 +406,8 @@ async function fetchAndSummarize(source) {
 
     const data = await response.json();
     if (!data.text) throw new Error("No readable text found.");
-    const summaryText = summarize(data.text, 2);
-    const evidenceItems = extractEvidence(data.text, 2);
-    const criticisms = extractCriticisms(data.text, 2);
-    state.summaries[source.url] = {
-      summary: summaryText,
-      evidence: evidenceItems,
-      criticisms,
-      updatedAt: Date.now()
-    };
+    const criticisms = extractCriticisms(data.text, 6);
+    state.summaries[source.url] = { criticisms, updatedAt: Date.now() };
     saveSummaries();
     setStatus(source.url, "Auto summary complete.");
   } catch (error) {
@@ -512,12 +505,10 @@ resetBtn.addEventListener("click", () => {
 
 exportBtn.addEventListener("click", () => {
   const rows = SOURCES.map((source) => {
-    const stored = getSummary(source.url) || { summary: "", evidence: [], criticisms: [] };
+    const stored = getSummary(source.url) || { criticisms: [] };
     return {
       title: source.title,
       url: source.url,
-      summary: stored.summary,
-      evidence: stored.evidence.join(" "),
       criticisms: stored.criticisms.join(" "),
     };
   });
