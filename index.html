@@ -275,9 +275,14 @@ const stopWords = new Set([
   "they","their","his","her","he","she","we","you","i","our"
 ]);
 const criticismKeywords = [
-  "critic", "controvers", "dispute", "debate", "concern", "challenge",
-  "accus", "question", "doubt", "oppos", "condemn", "blame", "ethic",
-  "moral", "responsib", "war", "weapon", "explosive", "dynamite"
+  "critic", "criticize", "criticism", "controvers", "debate", "dispute",
+  "concern", "question", "doubt", "oppos", "opposed", "resist", "backlash",
+  "condemn", "blame", "ethic", "moral", "responsib", "regret",
+  "war", "weapon", "arms", "armament", "military", "explosive", "dynamite",
+  "nitroglycerin", "blast", "detonation", "bomb", "munition",
+  "accident", "explosion", "dead", "death", "fatal", "injur", "victim",
+  "lawsuit", "legal", "court", "trial", "ban", "protest", "opposition",
+  "profit", "industry", "arms trade", "military contract"
 ];
 
 const qInput = document.getElementById("q");
@@ -343,19 +348,37 @@ function extractEvidence(text, maxItems = 2) {
     .map((item) => item.sentence);
 }
 
-function extractCriticisms(text, maxItems = 4) {
+function extractCriticisms(text, maxItems = 8) {
   const sentences = text
     .replace(/\\s+/g, " ")
     .split(/(?<=[.!?])\\s+/)
     .map((s) => s.trim())
-    .filter((sentence) => sentence.length > 40 && sentence.length < 280);
+    .filter((sentence) => sentence.length > 40 && sentence.length < 420);
 
   const hits = sentences.filter((sentence) => {
     const lower = sentence.toLowerCase();
     return criticismKeywords.some((key) => lower.includes(key));
   });
 
-  if (hits.length === 0) return [];
+  if (hits.length === 0) {
+    const broadened = sentences.filter((sentence) => {
+      const lower = sentence.toLowerCase();
+      return (
+        lower.includes("explosive") ||
+        lower.includes("dynamite") ||
+        lower.includes("nitroglycerin") ||
+        lower.includes("weapon") ||
+        lower.includes("war") ||
+        lower.includes("arms")
+      );
+    });
+    if (broadened.length === 0) return [];
+    const scored = scoreSentences(broadened);
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxItems)
+      .map((item) => item.sentence);
+  }
   const scored = scoreSentences(hits);
   return scored
     .sort((a, b) => b.score - a.score)
@@ -407,7 +430,7 @@ async function fetchAndSummarize(source) {
 
     const data = await response.json();
     if (!data.text) throw new Error("No readable text found.");
-    const criticisms = extractCriticisms(data.text, 4);
+    const criticisms = extractCriticisms(data.text, 8);
     state.summaries[source.url] = { criticisms, updatedAt: Date.now() };
     saveSummaries();
     setStatus(source.url, "Auto summary complete.");
