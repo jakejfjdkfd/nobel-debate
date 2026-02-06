@@ -172,117 +172,28 @@
   </main>
 
 <script>
-const SOURCES = [
-  {"title":"Britannica - Alfred Nobel","url":"https://www.britannica.com/biography/Alfred-Nobel"},
-  {"title":"Nobel Prize - Alfred Nobel's life and work","url":"https://www.nobelprize.org/alfred-nobel/alfred-nobels-life-and-work/"},
-  {"title":"Nobel Prize - Biographical information","url":"https://www.nobelprize.org/alfred-nobel/biographical-information/"},
-  {"title":"Nobel Prize - Full text of Alfred Nobel's will","url":"https://www.nobelprize.org/alfred-nobel/full-text-of-alfred-nobels-will-2/"},
-  {"title":"Nobel Prize - Alfred Nobel","url":"https://www.nobelprize.org/alfred-nobel/"},
-  {"title":"Nobel Prize - Alfred Nobel's will","url":"https://www.nobelprize.org/prizes/about/alfred-nobels-will/"},
-  {"title":"Nobel Prize - Facts","url":"https://www.nobelprize.org/prizes/facts/nobel-prize-facts/"},
-  {"title":"Nobel Prize - Award ceremonies","url":"https://www.nobelprize.org/prizes/about/the-nobel-prize-award-ceremonies/"},
-  {"title":"Nobel Prize - Award process","url":"https://www.nobelprize.org/prizes/about/prize-award-process/"},
-  {"title":"Nobel Prize - Nobel Foundation","url":"https://www.nobelprize.org/prizes/about/nobel-foundation/"},
-  {"title":"Nobel Prize - History","url":"https://www.nobelprize.org/prizes/about/history/"},
-  {"title":"Nobel Prize - Peace","url":"https://www.nobelprize.org/prizes/peace/"},
-  {"title":"Nobel Prize - Literature","url":"https://www.nobelprize.org/prizes/literature/"},
-  {"title":"Nobel Prize - Physics","url":"https://www.nobelprize.org/prizes/physics/"},
-  {"title":"Nobel Prize - Chemistry","url":"https://www.nobelprize.org/prizes/chemistry/"},
-  {"title":"Nobel Prize - Medicine","url":"https://www.nobelprize.org/prizes/medicine/"},
-  {"title":"Nobel Prize - Economic Sciences","url":"https://www.nobelprize.org/prizes/economic-sciences/"},
-  {"title":"Nobel Prize Museum","url":"https://www.nobelprizemuseum.se/en"},
-  {"title":"Nobel Prize - Q&A","url":"https://www.nobelprize.org/alfred-nobel/alfred-nobel-questions-and-answers/"},
-  {"title":"Science History - Alfred Nobel","url":"https://www.sciencehistory.org/education/scientific-biographies/alfred-nobel"},
-  {"title":"Famous Scientists - Alfred Nobel","url":"https://www.famousscientists.org/alfred-nobel/"},
-  {"title":"Ducksters - Alfred Nobel","url":"https://www.ducksters.com/biography/alfred_nobel.php"},
-  {"title":"World Atlas - Alfred Nobel","url":"https://www.worldatlas.com/articles/alfred-nobel.html"},
-  {"title":"Biography Online - Alfred Nobel","url":"https://www.biographyonline.net/scientists/alfred-nobel.html"},
-  {"title":"History Extra - Alfred Nobel","url":"https://www.historyextra.com/period/victorian/alfred-nobel-facts-biography/"},
-  {"title":"Live Science - Alfred Nobel","url":"https://www.livescience.com/alfred-nobel"},
-  {"title":"ThoughtCo - Alfred Nobel","url":"https://www.thoughtco.com/alfred-nobel-biography-4176432"},
-  {"title":"Softschools - Alfred Nobel facts","url":"https://www.softschools.com/facts/scientists/alfred_nobel_facts/1586/"},
-  {"title":"The Famous People - Alfred Nobel","url":"https://www.thefamouspeople.com/profiles/alfred-nobel-190.php"},
-  {"title":"NNDB - Alfred Nobel","url":"https://www.nndb.com/people/380/000044248/"},
-  {"title":"Linda Hall Library - Alfred Nobel","url":"https://www.lindahall.org/about/news/scientist-of-the-day/alfred-nobel/"},
-  {"title":"PBS - Alfred Nobel","url":"https://www.pbs.org/wgbh/aso/databank/entries/bknobe.html"},
-  {"title":"RSC - Alfred Nobel","url":"https://www.rsc.org/diversity/150-years-of-chemistry/alfred-nobel"},
-  {"title":"Chemistry World - Alfred Nobel","url":"https://www.chemistryworld.com/alfred-nobel/3007088.article"},
-  {"title":"Engineering.com - Alfred Nobel","url":"https://www.engineering.com/alfred-nobel-inventor-of-dynamite/"},
-  {"title":"Explosives History - Alfred Nobel","url":"https://www.explosiveshistory.org/alfred-nobel"},
-  {"title":"Mining Hall of Fame - Alfred Nobel","url":"https://www.mininghalloffame.org/inductee/alfred-nobel"},
-  {"title":"ACS - Nobel landmark","url":"https://www.acs.org/education/whatischemistry/landmarks/nobel.html"},
-  {"title":"Tekniska Museet - Alfred Nobel","url":"https://www.tek.museum/en/explore/alfred-nobel/"},
-  {"title":"Nobel Center - Alfred Nobel","url":"https://www.nobelcenter.se/en/about/alfred-nobel/"},
-  {"title":"Sweden.se - Alfred Nobel","url":"https://www.sweden.se/culture/alfred-nobel/"},
-  {"title":"Visit Stockholm - Nobel Prize Museum","url":"https://www.visitstockholm.com/o/nobel-prize-museum/"},
-  {"title":"BBC - Alfred Nobel","url":"https://www.bbc.co.uk/history/historic_figures/nobel_alfred.shtml"},
-  {"title":"National Geographic - Nobel Prize","url":"https://www.nationalgeographic.com/history/article/nobel-prize"},
-  {"title":"Smithsonian - Alfred Nobel","url":"https://www.smithsonianmag.com/history/alfred-nobel-man-behind-prize-180962329/"},
-  {"title":"Discovery - Alfred Nobel","url":"https://www.discovery.com/science/alfred-nobel"},
-  {"title":"History.com - Nobel Prize","url":"https://www.history.com/topics/inventions/nobel-prize"},
-  {"title":"Oxford Reference - Alfred Nobel","url":"https://www.oxfordreference.com/view/10.1093/oi/authority.20110803100258816"},
-  {"title":"Cambridge Core - Alfred Nobel","url":"https://www.cambridge.org/core/books/alfred-nobel/"},
-  {"title":"Harvard Magazine - Alfred Nobel","url":"https://www.harvardmagazine.com/alfred-nobel"},
-  {"title":"Stanford Library - Nobel","url":"https://library.stanford.edu/nobel"},
-  {"title":"MIT - Nobel","url":"https://www.mit.edu/~chemistry/nobel/"},
-  {"title":"UPenn Almanac - Nobel","url":"https://www.upenn.edu/almanac/v45/n34/nobel.html"},
-  {"title":"Project Gutenberg search","url":"https://www.gutenberg.org/ebooks/search/?query=alfred+nobel"},
-  {"title":"Archive.org search","url":"https://archive.org/search?query=alfred+nobel"},
-  {"title":"HathiTrust record","url":"https://www.hathitrust.org/record/alfred-nobel"},
-  {"title":"Open Library search","url":"https://openlibrary.org/search?q=alfred+nobel"},
-  {"title":"Poetry Foundation - Alfred Nobel","url":"https://www.poetryfoundation.org/poets/alfred-nobel"},
-  {"title":"Find a Grave - Alfred Nobel","url":"https://www.findagrave.com/memorial/7300/alfred-nobel"},
-  {"title":"Prabook - Alfred Nobel","url":"https://prabook.com/web/alfred.nobel/372516"},
-  {"title":"Alchetron - Alfred Nobel","url":"https://alchetron.com/Alfred-Nobel"},
-  {"title":"KidsKonnect - Alfred Nobel","url":"https://www.kidskonnect.com/biography/alfred-nobel/"},
-  {"title":"Twinkl - Alfred Nobel","url":"https://www.twinkl.com/teaching-wiki/alfred-nobel"},
-  {"title":"Primary Homework Help - Alfred Nobel","url":"https://www.primaryhomeworkhelp.co.uk/nobel/"},
-  {"title":"NatGeo Kids - Nobel Prize","url":"https://www.natgeokids.com/uk/discover/history/general-history/nobel-prize/"},
-  {"title":"English Heritage - Alfred Nobel","url":"https://www.english-heritage.org.uk/learn/histories/alfred-nobel/"},
-  {"title":"Scandinavia Standard - Alfred Nobel","url":"https://www.scandinaviastandard.com/the-life-of-alfred-nobel/"},
-  {"title":"Swedish Press - Alfred Nobel","url":"https://www.swedishpress.com/alfred-nobel/"},
-  {"title":"The Local - Alfred Nobel tag","url":"https://www.thelocal.se/tag/alfred-nobel"},
-  {"title":"Europeana search","url":"https://www.europeana.eu/en/search?q=alfred%20nobel"},
-  {"title":"Library of Congress search","url":"https://www.loc.gov/search/?q=alfred+nobel"},
-  {"title":"British Library - Alfred Nobel","url":"https://www.bl.uk/people/alfred-nobel"},
-  {"title":"UK National Archives search","url":"https://www.nationalarchives.gov.uk/search/results?q=alfred+nobel"},
-  {"title":"Smithsonian search","url":"https://www.si.edu/search?edan_q=alfred-nobel"},
-  {"title":"Smithsonian American History search","url":"https://americanhistory.si.edu/search?query=alfred-nobel"},
-  {"title":"Getty ULAN - Alfred Nobel","url":"https://www.getty.edu/research/tools/vocabularies/ulan/alfred-nobel"},
-  {"title":"USHMM search","url":"https://www.ushmm.org/search/results/?q=alfred-nobel"},
-  {"title":"Encyclopedia.com - Alfred Nobel","url":"https://www.encyclopedia.com/people/history/scandinavian-history-biographies/alfred-nobel"},
-  {"title":"Infoplease - Alfred Nobel","url":"https://www.infoplease.com/biographies/scientists/alfred-nobel"},
-  {"title":"Britannica - Nobel Prize","url":"https://www.britannica.com/money/topic/Nobel-Prize"},
-  {"title":"Nobel Media corporate","url":"https://corporate.nobelmedia.se/en/"},
-  {"title":"Nobel Peace Center","url":"https://www.nobelpeacecenter.org/en"},
-  {"title":"Nobel House Museum","url":"https://www.nobelhousemuseum.org/"},
-  {"title":"Sanremo Riviera - Alfred Nobel","url":"https://www.sanremoriviera.it/en/art-culture/alfred-nobel/"},
-  {"title":"Visit Liguria - Alfred Nobel","url":"https://www.visitliguria.eu/en/alfred-nobel"},
-  {"title":"Italy Magazine - Alfred Nobel in San Remo","url":"https://www.italymagazine.com/featured-story/alfred-nobel-san-remo"},
-  {"title":"Sweden History - Alfred Nobel","url":"https://www.swedenhistory.se/alfred-nobel"},
-  {"title":"History Hit - Alfred Nobel","url":"https://www.historyhit.com/alfred-nobel/"},
-  {"title":"Tate - Alfred Nobel","url":"https://www.tate.org.uk/art/artists/alfred-nobel-"},
-  {"title":"Art UK - Alfred Nobel","url":"https://www.artuk.org/discover/artists/nobel-alfred-18331896"},
-  {"title":"Oxford Learner's Dictionaries - Alfred Nobel","url":"https://www.oxfordlearnersdictionaries.com/definition/english/alfred-nobel"},
-  {"title":"Collins Dictionary - Alfred Nobel","url":"https://www.collinsdictionary.com/biography/alfred-nobel"},
-  {"title":"Britannica - Nobel Foundation","url":"https://www.britannica.com/topic/Nobel-Foundation"},
-  {"title":"Nobel Prize - Alfred Nobel articles","url":"https://www.nobelprize.org/alfred-nobel/articles/"}
-];
+let SOURCES = [];
 
 const stopWords = new Set([
   "the","and","a","an","to","of","in","for","on","with","at","by","from",
   "as","is","are","was","were","be","this","that","it","or","but","not",
   "they","their","his","her","he","she","we","you","i","our"
 ]);
-const criticismKeywords = [
-  "critic", "criticize", "criticism", "controvers", "debate", "dispute",
-  "concern", "question", "doubt", "oppos", "opposed", "resist", "backlash",
-  "condemn", "blame", "ethic", "moral", "responsib", "regret",
-  "war", "weapon", "arms", "armament", "military", "explosive", "dynamite",
-  "nitroglycerin", "blast", "detonation", "bomb", "munition",
-  "accident", "explosion", "dead", "death", "fatal", "injur", "victim",
-  "lawsuit", "legal", "court", "trial", "ban", "protest", "opposition",
-  "profit", "industry", "arms trade", "military contract"
+const limitationKeywords = [
+  "influence", "impact", "legacy", "recognition", "credit", "attribution",
+  "limited", "limit", "scope", "extent", "modest", "minor", "debate",
+  "dispute", "controvers", "myth", "overstated", "exaggerated",
+  "evidence", "historian", "scholar", "question", "doubt", "reassess",
+  "comparison", "relative", "overshadow", "lesser", "critic", "critique",
+  "criticism", "scandal", "politic", "bias", "omission", "snub",
+  "legitimacy", "ethic", "protest", "opposition", "contested", "challenged",
+  "arms", "military", "weapon", "explosive", "merchant of death"
+];
+
+const personalLifeKeywords = [
+  "marriage", "married", "spouse", "husband", "wife", "affair",
+  "family", "children", "child", "parent", "mother", "father",
+  "romance", "love", "relationship", "divorce"
 ];
 
 const qInput = document.getElementById("q");
@@ -297,6 +208,19 @@ const state = {
   summaries: loadSummaries(),
   status: {},
 };
+
+async function loadSources() {
+  try {
+    const response = await fetch("/sources.json", { cache: "no-store" });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (Array.isArray(data)) {
+      SOURCES = data.filter((item) => item && item.url);
+    }
+  } catch (error) {
+    // ignore
+  }
+}
 
 function tokenize(text) {
   return text
@@ -348,7 +272,7 @@ function extractEvidence(text, maxItems = 2) {
     .map((item) => item.sentence);
 }
 
-function extractCriticisms(text, maxItems = 8) {
+function extractCriticisms(text, maxItems = 6) {
   const sentences = text
     .replace(/\\s+/g, " ")
     .split(/(?<=[.!?])\\s+/)
@@ -357,27 +281,13 @@ function extractCriticisms(text, maxItems = 8) {
 
   const hits = sentences.filter((sentence) => {
     const lower = sentence.toLowerCase();
-    return criticismKeywords.some((key) => lower.includes(key));
+    const hasLimitation = limitationKeywords.some((key) => lower.includes(key));
+    const hasPersonal = personalLifeKeywords.some((key) => lower.includes(key));
+    return hasLimitation && !hasPersonal;
   });
 
   if (hits.length === 0) {
-    const broadened = sentences.filter((sentence) => {
-      const lower = sentence.toLowerCase();
-      return (
-        lower.includes("explosive") ||
-        lower.includes("dynamite") ||
-        lower.includes("nitroglycerin") ||
-        lower.includes("weapon") ||
-        lower.includes("war") ||
-        lower.includes("arms")
-      );
-    });
-    if (broadened.length === 0) return [];
-    const scored = scoreSentences(broadened);
-    return scored
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxItems)
-      .map((item) => item.sentence);
+    return [];
   }
   const scored = scoreSentences(hits);
   return scored
@@ -485,7 +395,7 @@ function render() {
     criticisms.className = "text";
     criticisms.textContent = stored?.criticisms?.length
       ? stored.criticisms.join(" ")
-      : "No criticism passages detected in this source.";
+      : "No relevant limitations found in this source.";
 
     const status = document.createElement("div");
     status.className = "status";
@@ -551,8 +461,10 @@ summarizeBtn.addEventListener("click", () => {
 
 render();
 
-// Auto-summarize on load.
-window.addEventListener("load", () => {
+// Auto-summarize on load after sources are loaded.
+window.addEventListener("load", async () => {
+  await loadSources();
+  render();
   summarizeAll();
 });
 </script>

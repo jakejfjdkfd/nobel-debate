@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nobel Source Finder (Tavily)</title>
+  <style>
+    :root {
+      --bg: #0a0c13;
+      --ink: #e7ecf2;
+      --accent: #6ef3ff;
+      --accent-2: #ff6bcb;
+      --muted: #aab3c2;
+      --card: #121725;
+      --border: #1f2a3f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", "Eurostile", "Arial", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(110, 243, 255, 0.18), transparent 60%),
+        radial-gradient(900px 600px at 110% 10%, rgba(255, 107, 203, 0.15), transparent 55%),
+        linear-gradient(180deg, #0a0c13 0%, #0b1020 60%, #0c1326 100%);
+    }
+    header {
+      padding: 28px 20px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(120deg, rgba(18, 23, 37, 0.9) 0%, rgba(10, 12, 19, 0.9) 100%);
+      backdrop-filter: blur(8px);
+    }
+    h1 { margin: 0 0 8px; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; }
+    p.subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 16px 20px 40px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    label { display: block; margin: 10px 0 6px; color: var(--muted); font-size: 13px; }
+    input, textarea, select, button {
+      font-family: inherit;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0f1424;
+      color: var(--ink);
+    }
+    textarea { width: 100%; min-height: 180px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { background: linear-gradient(135deg, #1ad1ff 0%, #6ef3ff 100%); color: #0a0c13; border: none; font-weight: 700; cursor: pointer; }
+    button.secondary { background: #1b2236; color: var(--ink); }
+    .status { color: var(--muted); font-size: 13px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .warn { color: #ffb3c7; font-size: 12px; }
+    @media (max-width: 720px) { .row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Nobel Source Finder</h1>
+      <p class="subtitle">Find non‑Wikipedia sources about Nobel legacy/impact limitations using your Tavily key.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <label for="apiKey">Tavily API Key</label>
+      <input id="apiKey" type="password" placeholder="tvly-..." />
+      <label><input id="saveKey" type="checkbox" /> Save key in this browser</label>
+      <p class="warn">Warning: Using your key in the browser exposes it to anyone with access to this page.</p>
+
+      <div class="row">
+        <div>
+          <label for="limit">Target sources</label>
+          <input id="limit" type="number" min="10" max="2000" value="1000" />
+        </div>
+        <div>
+          <label for="maxResults">Results per query</label>
+          <input id="maxResults" type="number" min="5" max="20" value="20" />
+        </div>
+      </div>
+
+      <div class="row">
+        <label><input id="broaden" type="checkbox" checked /> Broaden queries automatically</label>
+        <label><input id="filterRelevant" type="checkbox" /> Only keep criticism/impact sources (fewer)</label>
+      </div>
+
+      <label for="queries">Queries (one per line)</label>
+      <textarea id="queries"></textarea>
+
+      <div class="actions">
+        <button id="run">Run Search</button>
+        <button id="stop" class="secondary">Stop</button>
+        <button id="copy" class="secondary">Copy JSON</button>
+        <button id="download" class="secondary">Download JSON</button>
+      </div>
+
+      <p class="status" id="status">Idle</p>
+    </div>
+
+    <div class="card">
+      <label for="output">Sources JSON</label>
+      <textarea id="output" class="mono" placeholder="Results will appear here..."></textarea>
+    </div>
+  </main>
+
+<script>
+const defaultQueries = [
+  "Alfred Nobel legacy controversy impact",
+  "Alfred Nobel will contested criticism",
+  "Alfred Nobel dynamite ethical debate",
+  "Alfred Nobel reputation criticism",
+  "Alfred Nobel legacy questioned",
+  "Nobel Prize legacy criticism controversy",
+  "Nobel Prize committee criticism",
+  "Nobel Prize selection disputes",
+  "Nobel Prize omissions controversy",
+  "Nobel Prize legitimacy questioned",
+  "Nobel Prize bias debate",
+  "Nobel Prize scandals",
+  "Nobel Prize controversies list",
+  "Nobel Prize criticized for politics",
+  "Nobel Prize criticized for bias",
+  "Nobel Prize economics controversy",
+  "Nobel Prize literature controversy",
+  "Nobel Peace Prize controversy",
+  "Nobel Prize award process criticism",
+  "Nobel Prize legacy debate historians"
+];
+
+const queryTopics = [
+  "Alfred Nobel legacy",
+  "Alfred Nobel influence",
+  "Alfred Nobel reputation",
+  "Alfred Nobel dynamite",
+  "Alfred Nobel will",
+  "Nobel Prize legacy",
+  "Nobel Prize selection",
+  "Nobel Prize award process",
+  "Nobel Prize committee",
+  "Nobel Prize omissions",
+  "Nobel Prize bias",
+  "Nobel Prize controversy",
+  "Nobel Peace Prize controversy",
+  "Nobel Prize economics controversy",
+  "Nobel Prize literature controversy",
+  "Nobel Prize science controversy",
+  "Nobel Prize legitimacy",
+  "Nobel Prize impact",
+  "Nobel Prize criticism"
+];
+
+const queryModifiers = [
+  "criticism",
+  "critique",
+  "controversy",
+  "controversies",
+  "debate",
+  "dispute",
+  "questioned",
+  "challenged",
+  "reassessed",
+  "limitations",
+  "bias",
+  "gender bias",
+  "politicized",
+  "omissions",
+  "snubs",
+  "scandal",
+  "ethics",
+  "legacy",
+  "impact"
+];
+
+const limitationKeywords = [
+  "influence", "impact", "legacy", "recognition", "credit", "attribution",
+  "limited", "limit", "scope", "extent", "modest", "minor", "debate",
+  "dispute", "controvers", "myth", "overstated", "exaggerated",
+  "evidence", "historian", "scholar", "question", "doubt", "reassess",
+  "comparison", "relative", "overshadow", "lesser", "bias", "omission",
+  "snub", "politic", "ethic", "scandal", "legitimacy", "critic", "critique"
+];
+
+const personalLifeKeywords = [
+  "marriage", "married", "spouse", "husband", "wife", "affair",
+  "family", "children", "child", "parent", "mother", "father",
+  "romance", "love", "relationship", "divorce"
+];
+
+const apiKeyInput = document.getElementById("apiKey");
+const saveKey = document.getElementById("saveKey");
+const limitInput = document.getElementById("limit");
+const maxResultsInput = document.getElementById("maxResults");
+const queriesInput = document.getElementById("queries");
+const output = document.getElementById("output");
+const statusEl = document.getElementById("status");
+const runBtn = document.getElementById("run");
+const stopBtn = document.getElementById("stop");
+const copyBtn = document.getElementById("copy");
+const downloadBtn = document.getElementById("download");
+
+let stopRequested = false;
+
+function isRelevant(text) {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  const hasLimitation = limitationKeywords.some((key) => lower.includes(key));
+  const hasPersonal = personalLifeKeywords.some((key) => lower.includes(key));
+  return hasLimitation && !hasPersonal;
+}
+
+function normalizeUrl(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "").toLowerCase();
+    const path = u.pathname.replace(/\/+$/, "");
+    return `${u.protocol}//${host}${path}${u.search}`;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function tavilySearch(apiKey, query, maxResults) {
+  const excludeDomains = [
+    "wikipedia.org",
+    "m.wikipedia.org",
+    "wikimedia.org",
+    "wikiwand.com",
+    "justapedia.org",
+    "grokipedia.com",
+    "fandom.com",
+    "wikia.com",
+    "wikibooks.org",
+    "wikisource.org",
+    "wikinews.org",
+    "wiktionary.org",
+    "wikivoyage.org",
+    "wikiquote.org",
+    "wikidata.org"
+  ];
+
+  const response = await fetch("https://api.tavily.com/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      api_key: apiKey,
+      query,
+      search_depth: "advanced",
+      max_results: maxResults,
+      include_answer: false,
+      include_raw_content: false,
+      exclude_domains: excludeDomains
+    })
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Tavily error ${response.status}: ${text}`);
+  }
+  return response.json();
+}
+
+function updateOutput(list) {
+  output.value = JSON.stringify(list, null, 2);
+}
+
+function setStatus(msg) {
+  statusEl.textContent = msg;
+}
+
+function loadSavedKey() {
+  const saved = localStorage.getItem("tavily-key");
+  if (saved) {
+    apiKeyInput.value = saved;
+    saveKey.checked = true;
+  }
+}
+
+saveKey.addEventListener("change", () => {
+  if (saveKey.checked) {
+    localStorage.setItem("tavily-key", apiKeyInput.value);
+  } else {
+    localStorage.removeItem("tavily-key");
+  }
+});
+
+apiKeyInput.addEventListener("input", () => {
+  if (saveKey.checked) {
+    localStorage.setItem("tavily-key", apiKeyInput.value);
+  }
+});
+
+runBtn.addEventListener("click", async () => {
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) return setStatus("Missing API key.");
+
+  const limit = Number(limitInput.value || 1000);
+  const maxResults = Number(maxResultsInput.value || 20);
+  const queryLines = queriesInput.value.split(/
++/).map((q) => q.trim()).filter(Boolean);
+  const baseQueries = queryLines.length ? queryLines : defaultQueries;
+  const broaden = document.getElementById("broaden").checked;
+  const filterRelevant = document.getElementById("filterRelevant").checked;
+
+  const queries = new Set(baseQueries);
+  if (broaden) {
+    for (const topic of queryTopics) {
+      for (const mod of queryModifiers) {
+        queries.add(`${topic} ${mod}`);
+      }
+    }
+    for (let year = 2000; year <= 2026; year++) {
+      queries.add(`Nobel Prize controversy ${year}`);
+      queries.add(`Nobel Peace Prize controversy ${year}`);
+      queries.add(`Nobel Prize literature controversy ${year}`);
+      queries.add(`Nobel Prize economics controversy ${year}`);
+    }
+  }
+
+  stopRequested = false;
+  const collected = new Map();
+  const queryList = Array.from(queries);
+
+  for (let i = 0; i < queryList.length; i++) {
+    if (stopRequested || collected.size >= limit) break;
+    const query = queryList[i];
+    setStatus(`Searching: ${query} (${collected.size}/${limit})`);
+
+    try {
+      const data = await tavilySearch(apiKey, query, maxResults);
+      const results = data.results || [];
+
+      for (const item of results) {
+        if (collected.size >= limit) break;
+        if (!item || !item.url) continue;
+
+        const normalized = normalizeUrl(item.url);
+        if (!normalized) continue;
+        if (/wikipedia\.org/i.test(normalized)) continue;
+
+        if (filterRelevant) {
+          const snippet = `${item.title || ""} ${item.content || ""}`;
+          if (!isRelevant(snippet)) continue;
+        }
+
+        if (!collected.has(normalized)) {
+          collected.set(normalized, {
+            title: item.title || item.url,
+            url: item.url
+          });
+        }
+      }
+    } catch (err) {
+      setStatus(`Error: ${err.message}`);
+    }
+
+    updateOutput(Array.from(collected.values()));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  setStatus(`Done. Collected ${collected.size} sources.`);
+});
+
+stopBtn.addEventListener("click", () => {
+  stopRequested = true;
+  setStatus("Stopping...");
+});
+
+copyBtn.addEventListener("click", () => {
+  output.select();
+  document.execCommand("copy");
+  setStatus("Copied JSON to clipboard.");
+});
+
+downloadBtn.addEventListener("click", () => {
+  const blob = new Blob([output.value || "[]"], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "sources.json";
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+queriesInput.value = defaultQueries.join("
+");
+loadSavedKey();
+</script>
+</body>
+</html>
